@@ -1,0 +1,16 @@
+Module: Bitcoin.Topic
+Version: 1.0
+Description: Publishes Bitcoin price to an SNS topic every minute
+Items:
+
+  - Function: PublishBitcoinFunction
+    Memory: 256
+    Timeout: 30
+    Sources:
+      - Schedule: rate(1 minute)
+
+  - Resource: Topic
+    Type: AWS::SNS::Topic
+    Scope: PublishBitcoinFunction, public
+    Allow:
+      - sns:Publish

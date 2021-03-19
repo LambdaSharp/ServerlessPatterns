@@ -1,0 +1,48 @@
+Module: Bitcoin.Table
+Version: 1.0
+Description: Stores most recent Bitcoin prices in a DynamoDB table
+Using:
+  - Module: Bitcoin.Topic:1.0@serverlesspatterns
+Items:
+
+  - Parameter: PriceRetentionInMinutes
+    Scope: StoreBitcoinFunction
+    Description: Duration in minutes for how long Bitcoin prices are stored
+    Section: Bitcoin Activity Settings
+    Label: Retention period (minutes)
+    Type: Number
+    MinValue: 1
+    Default: 15
+
+  - Import: BitcoinTopic
+    Module: Bitcoin.Topic::Topic
+    Type: AWS::SNS::Topic
+    Allow:
+      - sns:Subscribe
+
+  - Function: StoreBitcoinFunction
+    Memory: 256
+    Timeout: 30
+    Sources:
+      - Topic: BitcoinTopic
+
+  - Resource: Table
+    Type: AWS::DynamoDB::Table
+    Scope: StoreBitcoinFunction, public
+    Allow:
+      - dynamodb:PutItem
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      TimeToLiveSpecification:
+        AttributeName: Expire
+        Enabled: true

@@ -1,0 +1,18 @@
+Module: Bitcoin.Event
+Version: 1.0
+Description: Publishes most recent Bitcoin prices from the SNS topic to EventBridge
+Using:
+  - Module: Bitcoin.Topic:1.0@serverlesspatterns
+Items:
+
+  - Import: BitcoinTopic
+    Module: Bitcoin.Topic::Topic
+    Type: AWS::SNS::Topic
+    Allow:
+      - sns:Subscribe
+
+  - Function: PublishBitcoinPriceFunction
+    Memory: 256
+    Timeout: 30
+    Sources:
+      - Topic: BitcoinTopic
